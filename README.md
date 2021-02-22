@@ -3,7 +3,6 @@ Image_Captioning Project
 
 
 ## Step
-----------
 1. clone COCO API repository
 ```
 git clone https://github.com/cocodataset/cocoapi.git
