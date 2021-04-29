@@ -4,6 +4,7 @@ import torch.nn as nn
 import numpy as np
 import os
 import pickle
+import json
 
 from data_loader import get_loader
 from build_vocab import Vocabulary
@@ -12,15 +13,18 @@ from torch.nn.utils.rnn import pack_padded_sequence
 from torchvision import transforms
 
 
-device = torch.device('cuda' if torch.cuda.is_avaliable() else 'cpu')
+device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
 def main(args):
+    if args.ko:
+        with open(args.ko, 'r') as f:
+            en2ko = json.load(f)
     # Create model directory
     if not os.path.exists(args.model_path):
         os.makedirs(args.model_path)
 
     # Image preprocessing, normalization for the pretrained resnet
-    transforms = transforms.Compse([
+    transform = transforms.Compose([
         transforms.RandomCrop(args.crop_size),
         transforms.RandomHorizontalFlip(),
         transforms.ToTensor(),
@@ -35,7 +39,8 @@ def main(args):
     # Build data loader
     data_loader = get_loader(args.image_dir, args.caption_path, vocab,
                             transform, args.batch_size,
-                            shuffle=True, num_workers=args.num_workers)
+                            shuffle=True, num_workers=args.num_workers,
+                            en2ko=en2ko)
 
     # Build the models
     encoder = EncoderCNN(args.embed_size).to(device)
@@ -85,6 +90,7 @@ if __name__ == '__main__':
     parser.add_argument('--vocab_path', type=str, default='data/vocab.pkl', help='vacabulary warpper의 경로')
     parser.add_argument('--image_dir', type=str, default='data/resized2014', help='resized images의 경로')
     parser.add_argument('--caption_path', type=str, default='data/annotations/captions_train2014.json', help='train annotation json file의 경로')
+    parser.add_argument('--ko', type=str, default=None, help='ko dataset 경로')
     parser.add_argument('--log_step', type=int, default=10, help='log info를 출력하기 위한 step size')
     parser.add_argument('--save_step', type=int, default=10, help='trained models을 저장하기 위한 step size')
 

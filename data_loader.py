@@ -5,14 +5,14 @@ import os
 import pickle
 import numpy as np
 import nltk
-from PIL import image
+from PIL import Image as image
 from build_vocab import Vocabulary
 from pycocotools.coco import COCO
 
 
 class CocoDataset(data.Dataset):
     """torch.utils.data.DataLoader와 호환되는 Custom COCO Dataset"""
-    def __init__(self, root, json, vovab, transform=None):
+    def __init__(self, root, json, vovab, en2ko, ransform=None):
         """Set the path for images, captions and vocabulary wrapper.
 
         Args:
@@ -33,6 +33,8 @@ class CocoDataset(data.Dataset):
         vocab = self.vocab
         ann_id = self.ids[index]
         caption = coco.anns[ann_id]['caption']
+        if en2ko:
+            caption = en2ko[caption]
         img_id = coco.anns[ann_id]['image_id']
         path = coco.LoadImgs(img_id)[0]['file_name']
 
@@ -41,7 +43,11 @@ class CocoDataset(data.Dataset):
             image = self.transform(image)
 
         # Caption(String)을 word ids로 변환한다
-        tokens = nltk.tokenize.word_tokenize(str(caption).lower())
+        if en2ko:
+            tokens = okt.morphs(caption)
+        else:
+            tokens = nltk.tokenize.word_tokenize(str(caption).lower())
+        
         caption = []
         caption.append(vocab('<start>'))
         caption.extend([vocab(token) for token in tokens])
@@ -85,12 +91,13 @@ def collate_fn(data):
         targets[i, :end] = cap[:end]
     return images, targets, lengths
 
-def get_loader(root, json, vocab, transform, batch_size, shuffle, num_workers):
+def get_loader(root, json, vocab, transform, batch_size, shuffle, num_workers, en2ko):
     """custom coco dataset을 위한 torch.utils.data.DataLOader를 반환한다."""
     # COCO caption dataset
     coco = CocoDataset(root=root,
                         json=json,
                         vocab=vocab,
+                        en2ko=en2ko,
                         transform=transform)
 
     # COCO dataset을 위한 데이터셋
