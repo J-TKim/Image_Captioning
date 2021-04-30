@@ -35,7 +35,7 @@ def main(args):
     # Load vocabulary wrapper
     with open(args.vocab_path, 'rb') as f:
         vocab = pickle.load(f)
-
+        
     # Build data loader
     data_loader = get_loader(args.image_dir, args.caption_path, vocab,
                             transform, args.batch_size,
@@ -97,7 +97,7 @@ if __name__ == '__main__':
     # Model parameters
     parser.add_argument('--embed_size', type=int, default=256, help='word embedding vectors 차원')
     parser.add_argument('--hidden_size', type=int, default=512, help='LSTM의 hidden state의 차원')
-    parser.add_argument('--num_layer', type=int, default=1, help='LSTM의 layer 수')
+    parser.add_argument('--num_layers', type=int, default=1, help='LSTM의 layer 수')
 
     parser.add_argument('--num_epochs', type=int, default=5)
     parser.add_argument('--batch_size', type=int, default=128)

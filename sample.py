@@ -48,7 +48,7 @@ def main(args):
     image_tensor = image.to(device)
 
     # 이미지에서 캡션을 생성해낸다.
-    feature = encodeR(image_tensor)
+    feature = encoder(image_tensor)
     sampled_ids = decoder.sample(feature)
     sampled_ids = sampled_ids[0].cpu().numpy() # (1, max_seq_length) -> (max_seq_length)    
 

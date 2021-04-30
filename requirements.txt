@@ -3,4 +3,5 @@ nltk
 numpy
 Pillow
 argparse
+jpype1==0.7.0
 konlpy

@@ -5,14 +5,17 @@ import os
 import pickle
 import numpy as np
 import nltk
-from PIL import Image as image
+from konlpy.tag import Okt  
+okt=Okt()
+
+from PIL import Image
 from build_vocab import Vocabulary
 from pycocotools.coco import COCO
 
 
 class CocoDataset(data.Dataset):
     """torch.utils.data.DataLoader와 호환되는 Custom COCO Dataset"""
-    def __init__(self, root, json, vovab, en2ko, ransform=None):
+    def __init__(self, root, json, vocab, en2ko, transform=None):
         """Set the path for images, captions and vocabulary wrapper.
 
         Args:
@@ -22,9 +25,10 @@ class CocoDataset(data.Dataset):
             transform: image transformer
         """
         self.root = root
-        self.coco = COCO
+        self.coco = COCO(json)
         self.ids = list(self.coco.anns.keys())
         self.vocab = vocab
+        self.en2ko = en2ko
         self.transform = transform
 
     def __getitem__(self, index):
@@ -33,17 +37,17 @@ class CocoDataset(data.Dataset):
         vocab = self.vocab
         ann_id = self.ids[index]
         caption = coco.anns[ann_id]['caption']
-        if en2ko:
-            caption = en2ko[caption]
+        if self.en2ko:
+            caption = self.en2ko[caption]
         img_id = coco.anns[ann_id]['image_id']
-        path = coco.LoadImgs(img_id)[0]['file_name']
+        path = coco.loadImgs(img_id)[0]['file_name']
 
-        image = Image(os.path.join(self.root, path)).convert('RGB')
+        image = Image.open(os.path.join(self.root, path)).convert('RGB')
         if self.transform is not None:
             image = self.transform(image)
 
         # Caption(String)을 word ids로 변환한다
-        if en2ko:
+        if self.en2ko:
             tokens = okt.morphs(caption)
         else:
             tokens = nltk.tokenize.word_tokenize(str(caption).lower())

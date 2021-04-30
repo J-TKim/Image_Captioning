@@ -52,7 +52,7 @@ def build_vocab(json, threshold, en2ko):
     words = [word for word, cnt in counter.items() if cnt >= threshold]
 
     # Create a vocab wrapper and add some special tokens
-    vocab = Vovabulary()
+    vocab = Vocabulary()
     vocab.add_word('<pad>')
     vocab.add_word('<start>')
     vocab.add_word('<end>')
